@@ -27,7 +27,7 @@ public class SubjectGradeEntity {
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
-	@JsonView(Views.Admin.class)
+	@JsonView(Views.Private.class)
 	private Integer id;
 
 	@JsonView(Views.Private.class)

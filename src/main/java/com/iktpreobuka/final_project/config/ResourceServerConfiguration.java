@@ -22,11 +22,20 @@ public class ResourceServerConfiguration extends ResourceServerConfigurerAdapter
     public void configure(HttpSecurity http) throws Exception {
         http.
         anonymous().disable()
-        .requestMatchers().antMatchers("/**")
+        
+        .requestMatchers()
+        .antMatchers("/**")
+        //.antMatchers("/parent/**").antMatchers("/professor/**").antMatchers("/admin/**").antMatchers("/student/**")
         .and().authorizeRequests()
        // .antMatchers("/users/**").access("hasRole('USER') or hasRole('ADMIN')")
      //.antMatchers("/users/**").hasRole("USER")
      
+        .antMatchers("/user/admin/**").hasRole("ADMIN")
+        .antMatchers("/user/**").permitAll()
+        .antMatchers("/class/user/**").permitAll()
+        .antMatchers("/mark/user/**").permitAll()
+        .antMatchers("/subject_grade/get_subject_by_student_id/**").permitAll()
+        .antMatchers("/subject_grade/user/**").permitAll()
         
         //PARENT ACCESS
         .antMatchers("/parent/parent/**").hasRole("PARENT")
@@ -40,11 +49,14 @@ public class ResourceServerConfiguration extends ResourceServerConfigurerAdapter
         //PROF ACCESS
         .antMatchers("/professor/professor/**").hasRole("PROFESSOR")
         .antMatchers("/mark/professor/**").hasRole("PROFESSOR")
-        .antMatchers("/final_mark/professor/**").hasRole("PROFESSOR")// ***
+        .antMatchers("/final_mark/professor/**").hasRole("PROFESSOR")// *** final mark ne postoji vise
+        
         .antMatchers("/class/professor/**").hasRole("PROFESSOR")
         
          //ADMIN ACCESS
         .antMatchers("/**").hasRole("ADMIN")
+        
+
         
         
      

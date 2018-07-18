@@ -47,6 +47,13 @@ public class ProfessorController {
 		return professorDao.getProfessorById(id);
 	}
 	
+	//Find by token ||PROF
+	@RequestMapping(method=RequestMethod.GET,value="/professor/")
+	@JsonView(Views.Professor.class)
+	public ResponseEntity<?> getProfessorFromToken_professor(){
+		return professorDao.getProfessorFromToken();
+	}
+	
 	//Delete by id
 	@RequestMapping(method=RequestMethod.DELETE,value="/{id}")
 	@JsonView(Views.Admin.class)

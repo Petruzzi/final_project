@@ -7,10 +7,13 @@ import org.springframework.data.repository.CrudRepository;
 import com.iktpreobuka.final_project.entities.ClassEntity;
 import com.iktpreobuka.final_project.entities.ProfessorEntity;
 import com.iktpreobuka.final_project.entities.ScheduleEntity;
+import com.iktpreobuka.final_project.entities.StudentEntity;
 
 public interface ClassRepository extends CrudRepository<ClassEntity, Integer>{
 	public ClassEntity  findByHeadTeacher(ProfessorEntity pe);
 	
 	public List<ClassEntity> findBySchedulesIn(List<ScheduleEntity> se);
+	
+	public ClassEntity  findByStudentsIn(List<StudentEntity> seList);
 	
 }

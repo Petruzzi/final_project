@@ -1,5 +1,6 @@
 package com.iktpreobuka.final_project.services;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -15,10 +16,12 @@ import com.iktpreobuka.final_project.entities.ClassEntity;
 import com.iktpreobuka.final_project.entities.GradeEntity;
 import com.iktpreobuka.final_project.entities.ProfessorEntity;
 import com.iktpreobuka.final_project.entities.ScheduleEntity;
+import com.iktpreobuka.final_project.entities.StudentEntity;
 import com.iktpreobuka.final_project.repository.ClassRepository;
 import com.iktpreobuka.final_project.repository.GradeRepository;
 import com.iktpreobuka.final_project.repository.ProfessorRepository;
 import com.iktpreobuka.final_project.repository.ScheduleRepository;
+import com.iktpreobuka.final_project.repository.StudentRepository;
 
 @Service
 public class ClassDaoImpl implements ClassDao {
@@ -31,6 +34,9 @@ public class ClassDaoImpl implements ClassDao {
 	
 	@Autowired
 	private GradeRepository gradeRep;
+	
+	@Autowired
+	private StudentRepository studentRep;
 	
 	@Autowired
 	private ScheduleRepository scheduleRep;
@@ -93,7 +99,7 @@ public class ClassDaoImpl implements ClassDao {
 	public ResponseEntity<?> postNewClass(ClassDTO ceBody) {
 		try {
 			ClassEntity classE=new ClassEntity();
-				
+			List<StudentEntity> seList= new ArrayList<StudentEntity>();
 			
 			//dodati proveru odeljenja da se ne bi desilo ponavljanje ODELJENJE RAZRED kombinacije
 			Integer gradeInt=Integer.parseInt(ceBody.getGrade());		
@@ -112,8 +118,33 @@ public class ClassDaoImpl implements ClassDao {
 			else
 				return new ResponseEntity<>(new RESTError(2,"Professor already has a class"), HttpStatus.BAD_REQUEST);
 		
-									
+			
+			
+//			for(String idStr : ceBody.getStudents()) {//set students
+//				Integer intId=Integer.parseInt(idStr);
+//				try {
+//					seList.add(studentRep.findById(intId).get());
+//				} catch (NoSuchElementException e) {
+//					return new ResponseEntity<>(new RESTError(1,"Student with number "+intId+" not found."), HttpStatus.NOT_FOUND);
+//				}
+//			}
+			
+			for(String idStr : ceBody.getStudents()) {//set students
+				Integer intId=Integer.parseInt(idStr);
+				try {
+					StudentEntity se = studentRep.findById(intId).get();
+					se.setClassEntity(classE);
+					seList.add(se);
+				} catch (NoSuchElementException e) {
+					return new ResponseEntity<>(new RESTError(1,"Student with number "+intId+" not found."), HttpStatus.NOT_FOUND);
+				}
+			}
+			
+			
+			
 			classRep.save(classE);
+			studentRep.saveAll(seList);
+			classE.setStudents(seList);	
 			return new ResponseEntity<>(classE, HttpStatus.OK);
 		
 		} catch (NoSuchElementException e) {
@@ -133,6 +164,8 @@ public class ClassDaoImpl implements ClassDao {
 			ClassEntity classE=classRep.findById(idInt).get();
 			Integer classNumberInt=null;
 			Integer gradeInt=null;
+			List<StudentEntity> oldSeList= classE.getStudents();
+			List<StudentEntity> newSeList= new ArrayList<StudentEntity>();
 					
 			if(ceBody.getGrade()!=null) {
 				gradeInt=Integer.parseInt(ceBody.getGrade());		
@@ -162,8 +195,26 @@ public class ClassDaoImpl implements ClassDao {
 				}else
 					return new ResponseEntity<>(new RESTError(2,"Head teacher number must be greater than 0!"), HttpStatus.BAD_REQUEST);
 			}
-		
+			
+			for(StudentEntity se : oldSeList) {
+				se.setClassEntity(null);				
+			}
+			
+			for(String idStr : ceBody.getStudents()) {//set students
+				Integer intId=Integer.parseInt(idStr);
+				try {
+					StudentEntity se = studentRep.findById(intId).get();
+					se.setClassEntity(classE);
+					newSeList.add(se);
+				} catch (NoSuchElementException e) {
+					return new ResponseEntity<>(new RESTError(1,"Student with number "+intId+" not found."), HttpStatus.NOT_FOUND);
+				}
+			}
+			
+			studentRep.saveAll(oldSeList);
+			studentRep.saveAll(newSeList);
 			classRep.save(classE);
+			classE.setStudents(newSeList);
 			return new ResponseEntity<>(classE, HttpStatus.OK);	
 
 		} catch (NoSuchElementException e) {
@@ -175,6 +226,8 @@ public class ClassDaoImpl implements ClassDao {
 		}
 	}
 	
+	
+	// PREPRAVTI DISTINCT .... DUPLIRA
 	//Get class by prof
 	@Override
 	public ResponseEntity<?> getClassByProf(String profId){

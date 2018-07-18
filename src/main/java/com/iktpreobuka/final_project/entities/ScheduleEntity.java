@@ -25,7 +25,7 @@ public class ScheduleEntity {
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
-	@JsonView(Views.Admin.class)
+	@JsonView(Views.Private.class)
 	private Integer id;
 	
 	@Version
@@ -38,13 +38,10 @@ public class ScheduleEntity {
 	@JsonView(Views.Private.class)
 	private ProfessorEntity teacher;
 	
-
 	@ManyToOne(fetch=FetchType.LAZY,cascade=CascadeType.REFRESH)
 	@JoinColumn(name="subject")
 	@JsonView(Views.Private.class)
 	private SubjectGradeEntity subject;
-	
-	
 
 	@ManyToOne(fetch=FetchType.LAZY,cascade=CascadeType.REFRESH)
 	@JoinColumn(name="classEntity")
@@ -60,10 +57,7 @@ public class ScheduleEntity {
 	@OneToMany(mappedBy="schedule",fetch=FetchType.LAZY,cascade=CascadeType.REFRESH)
 	private List<MarkEntity> marks;
 	
-	@JsonIgnore
-	@OneToMany(mappedBy="schedule",fetch=FetchType.LAZY,cascade=CascadeType.REFRESH)
-	private List<FinalMarkEntity> finalMarks;
-	
+
 	@JsonIgnore
 	@OneToMany(mappedBy="schedule",fetch=FetchType.LAZY,cascade=CascadeType.REFRESH)
 	private List<AbsenceRecordEntity> absenceRecord=new ArrayList<AbsenceRecordEntity>();
@@ -144,14 +138,6 @@ public class ScheduleEntity {
 	}
 
 
-	public List<FinalMarkEntity> getFinalMarks() {
-		return finalMarks;
-	}
-
-
-	public void setFinalMarks(List<FinalMarkEntity> finalMarks) {
-		this.finalMarks = finalMarks;
-	}
 
 
 	public List<AbsenceRecordEntity> getAbsenceRecord() {

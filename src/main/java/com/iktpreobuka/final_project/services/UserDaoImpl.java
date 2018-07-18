@@ -5,6 +5,8 @@ import java.util.NoSuchElementException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.iktpreobuka.final_project.controllers.dto.ChangePasswordDTO;
@@ -12,6 +14,8 @@ import com.iktpreobuka.final_project.controllers.util.EmailObject;
 import com.iktpreobuka.final_project.controllers.util.Encryption;
 import com.iktpreobuka.final_project.controllers.util.PasswordValidation;
 import com.iktpreobuka.final_project.controllers.util.RESTError;
+import com.iktpreobuka.final_project.entities.ParentEntity;
+import com.iktpreobuka.final_project.entities.StudentEntity;
 import com.iktpreobuka.final_project.entities.UserEntity;
 import com.iktpreobuka.final_project.repository.UserRepository;
 
@@ -52,6 +56,30 @@ public class UserDaoImpl implements UserDao {
 	}
 	
 	@Override
+	public ResponseEntity<?> changePasswordByToken(ChangePasswordDTO cpBody){
+		try {	
+			
+			Authentication auth=SecurityContextHolder.getContext().getAuthentication(); 
+			String email=auth.getName();
+			UserEntity ue=userRep.findByEmail(email);
+				
+			String message=passwordVaidation.passwordCheck(ue.getPassword(), cpBody.getOldPassword(), cpBody.getNewPassword(), cpBody.getRepeatNewPassword());
+			if(message!=null)
+				return new ResponseEntity<>(new RESTError(2,message), HttpStatus.BAD_REQUEST);
+			
+			ue.setPassword(Encryption.getPassEncoded(cpBody.getNewPassword()));
+			
+			userRep.save(ue);
+			return new ResponseEntity<>(ue, HttpStatus.OK);
+				
+		} catch (NoSuchElementException e) {
+			return new ResponseEntity<>(new RESTError(1,"User not found."), HttpStatus.NOT_FOUND);
+		} catch (Exception e) {
+			return new ResponseEntity<>(new RESTError(3,"Error: "+e.getMessage()),HttpStatus.INTERNAL_SERVER_ERROR);
+		}		
+	}
+	
+	@Override
 	public ResponseEntity<?> resetUserPassword(String idString){
 		try {	
 			Integer id=Integer.parseInt(idString);			
@@ -80,5 +108,39 @@ public class UserDaoImpl implements UserDao {
 		} catch (Exception e) {
 			return new ResponseEntity<>(new RESTError(3,"Error: "+e.getMessage()),HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+	}
+	
+	//Find user by token
+	@Override
+	public ResponseEntity<?> getUserFromToken(){
+		try {
+			Authentication auth=SecurityContextHolder.getContext().getAuthentication(); 
+			String email=auth.getName();
+			UserEntity ue=userRep.findByEmail(email);
+			
+			return new ResponseEntity<>(ue, HttpStatus.OK);
+			
+		} catch (NoSuchElementException e) {
+			return new ResponseEntity<>(new RESTError(1,"User not found."), HttpStatus.NOT_FOUND);
+		} catch (Exception e) {
+			return new ResponseEntity<>(new RESTError(3,"Error: "+e.getMessage()),HttpStatus.INTERNAL_SERVER_ERROR);
+		}	
+	}
+	
+	//Find user by id
+	@Override
+	public ResponseEntity<?> getUserById(String idString){
+		try {
+			Integer id=Integer.parseInt(idString);			
+			UserEntity ue=userRep.findById(id).get();
+			return new ResponseEntity<>(ue, HttpStatus.OK);
+			
+		} catch (NoSuchElementException e) {
+			return new ResponseEntity<>(new RESTError(1,"User not found."), HttpStatus.NOT_FOUND);
+		} catch (NumberFormatException e) {
+			return new ResponseEntity<>(new RESTError(2,"Please fill up the whole number."), HttpStatus.BAD_REQUEST);
+		} catch (Exception e) {
+			return new ResponseEntity<>(new RESTError(3,"Error: "+e.getMessage()),HttpStatus.INTERNAL_SERVER_ERROR);
+		}	
 	}
 }	

@@ -11,6 +11,8 @@ public interface AdminDao {
 	
 	public ResponseEntity<?> getAdminById(String idString);
 	
+	public ResponseEntity<?> getAdminFromToken();
+	
 	public ResponseEntity<?> deleteById(String idString);
 	
 	public ResponseEntity<?> postNewAdmin(UserDTO aeBody);
@@ -20,4 +22,6 @@ public interface AdminDao {
 	public ResponseEntity<?> changePassword(ChangePasswordDTO cpBody,String idString);
 	
 	public ResponseEntity<?> resetUserPassword(String idString);
+	
+	public ResponseEntity<?> getLog();
 }

@@ -19,7 +19,7 @@ public class Check {
 		if(x.getClass().equals(StudentEntity.class)) {
 			System.out.println("pronasao studenta");	
 			StudentEntity se=(StudentEntity)x;
-			if(se.getFinalMarks().size()<1 && se.getMarks().size()<1 )//&& se.getClassEntity()==null
+			if( se.getMarks().size()<1 )//&& se.getClassEntity()==null
 				return true;
 			else
 				return false;			
@@ -37,7 +37,7 @@ public class Check {
 		if(x.getClass().equals(ProfessorEntity.class)) {
 			System.out.println("pronasao prof");
 			ProfessorEntity pe=(ProfessorEntity)x;	
-			if(pe.getSchedules().size()<1 && pe.getHeadTeacherOfClass()==null && pe.getFinalMarksRated().size()<1 && pe.getMarksRated().size()<1)
+			if(pe.getSchedules().size()<1 && pe.getHeadTeacherOfClass()==null && pe.getMarksRated().size()<1)
 				return true;
 			else
 				return false;
@@ -64,7 +64,7 @@ public class Check {
 		if(x.getClass().equals(ScheduleEntity.class)) {
 			System.out.println("pronasao schedule");
 			ScheduleEntity se=(ScheduleEntity)x;	
-			if(se.getFinalMarks().size()<1 && se.getMarks().size()<1 && se.getAbsenceRecord().size()<1)
+			if( se.getMarks().size()<1 && se.getAbsenceRecord().size()<1)
 				return true;
 			else
 				return false;

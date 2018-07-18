@@ -7,6 +7,8 @@ import java.util.NoSuchElementException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.iktpreobuka.final_project.controllers.dto.ChangePasswordDTO;
@@ -75,7 +77,13 @@ public class StudentDaoImpl implements StudentDao {
 			return new ResponseEntity<>(new RESTError(3,"Error: "+e.getMessage()),HttpStatus.INTERNAL_SERVER_ERROR);
 		}	
 	}
-
+	
+	//Find  student by token
+	@Override
+	public ResponseEntity<?> getStudentFromToken(){
+			return userDao.getUserFromToken();	
+	}
+	
 	//Delete by id
 	@Override
 	public ResponseEntity<?> deleteById(String idString) {
@@ -162,7 +170,13 @@ public class StudentDaoImpl implements StudentDao {
 			Integer id=Integer.parseInt(idString);			
 			StudentEntity se=studentRep.findById(id).get();
 			List<ParentEntity> peList =new ArrayList<ParentEntity>();	
-							
+			Integer classId;
+			
+			if(seBody.getClassIdStr()!=null) {//set class if not null
+				classId=Integer.parseInt(seBody.getClassIdStr());
+				ClassEntity classE=classRep.findById(classId).get();
+				se.setClassEntity(classE);
+			}	
 			if(seBody.getName()!=null)
 				if(seBody.getName().length()>=3 && seBody.getName().length()<=15)
 					se.setName(seBody.getName());	

@@ -1,5 +1,7 @@
 package com.iktpreobuka.final_project.services;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,10 +12,16 @@ import org.springframework.stereotype.Service;
 import com.iktpreobuka.final_project.controllers.dto.SubjectGradeDTO;
 import com.iktpreobuka.final_project.controllers.util.Check;
 import com.iktpreobuka.final_project.controllers.util.RESTError;
+import com.iktpreobuka.final_project.entities.ClassEntity;
 import com.iktpreobuka.final_project.entities.GradeEntity;
+import com.iktpreobuka.final_project.entities.ScheduleEntity;
+import com.iktpreobuka.final_project.entities.StudentEntity;
 import com.iktpreobuka.final_project.entities.SubjectEntity;
 import com.iktpreobuka.final_project.entities.SubjectGradeEntity;
+import com.iktpreobuka.final_project.repository.ClassRepository;
 import com.iktpreobuka.final_project.repository.GradeRepository;
+import com.iktpreobuka.final_project.repository.ScheduleRepository;
+import com.iktpreobuka.final_project.repository.StudentRepository;
 import com.iktpreobuka.final_project.repository.SubjectGradeRepository;
 import com.iktpreobuka.final_project.repository.SubjectRepository;
 
@@ -28,6 +36,15 @@ public class SubjectGradeDaoImpl implements SubjectGradeDao {
 	
 	@Autowired
 	private GradeRepository gradeRep;
+	
+	@Autowired
+	private StudentRepository studentRep;
+	
+	@Autowired
+	private ClassRepository classRep;
+	
+	@Autowired
+	private ScheduleRepository scheduleRep;
 	
 	//Find all
 	@Override
@@ -169,6 +186,36 @@ public class SubjectGradeDaoImpl implements SubjectGradeDao {
 			
 		} catch (NoSuchElementException e) {
 			return new ResponseEntity<>(new RESTError(1,"Subject not found."), HttpStatus.NOT_FOUND);
+		} catch (NumberFormatException e) {
+			return new ResponseEntity<>(new RESTError(2,"Please fill up the whole number."), HttpStatus.BAD_REQUEST);
+		} catch (Exception e) {
+			return new ResponseEntity<>(new RESTError(3,"Error: "+e.getMessage()),HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	// PROVERITI  ... MOZDA DUPLIRA
+	@Override
+	public ResponseEntity<?> getSubjectsByStudentId(String idString) {
+		try {
+			Integer id=Integer.parseInt(idString);			
+			StudentEntity se=studentRep.findById(id).get();
+			List<StudentEntity> seList=new ArrayList<StudentEntity>();
+			seList.add(se);
+			
+			ClassEntity ce=classRep.findByStudentsIn(seList);
+			List<ScheduleEntity> scheList=scheduleRep.findByClassEntity(ce);
+			
+			List<SubjectGradeEntity> sgeList = new ArrayList<SubjectGradeEntity>();
+			
+			for(ScheduleEntity sche: scheList) {
+				sgeList.add(sche.getSubject());
+			}
+			
+			
+			return new ResponseEntity<>(sgeList, HttpStatus.OK);
+		
+		} catch (NoSuchElementException e) {
+			return new ResponseEntity<>(new RESTError(1,"Entity not found."), HttpStatus.NOT_FOUND);
 		} catch (NumberFormatException e) {
 			return new ResponseEntity<>(new RESTError(2,"Please fill up the whole number."), HttpStatus.BAD_REQUEST);
 		} catch (Exception e) {

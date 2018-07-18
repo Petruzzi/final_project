@@ -7,6 +7,8 @@ import java.util.NoSuchElementException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.iktpreobuka.final_project.controllers.dto.ChangePasswordDTO;
@@ -20,6 +22,7 @@ import com.iktpreobuka.final_project.controllers.util.RESTError;
 import com.iktpreobuka.final_project.entities.AdminEntity;
 import com.iktpreobuka.final_project.entities.ParentEntity;
 import com.iktpreobuka.final_project.entities.StudentEntity;
+import com.iktpreobuka.final_project.entities.UserEntity;
 import com.iktpreobuka.final_project.repository.ParentRepository;
 import com.iktpreobuka.final_project.repository.RoleRepository;
 import com.iktpreobuka.final_project.repository.StudentRepository;
@@ -43,7 +46,7 @@ public class ParentDaoImpl implements ParentDao {
 	private EmailService emailService;
 	
 	@Autowired
-	private ParentDao userDao;
+	private UserDao userDao;
 	
 	//Find all
 	@Override
@@ -73,6 +76,30 @@ public class ParentDaoImpl implements ParentDao {
 		}
 	}
 
+	//Find  by token
+	@Override
+	public ResponseEntity<?> getParentFromToken(){
+			return userDao.getUserFromToken();	
+	}
+	
+	//Find  by token
+	@Override
+	public ResponseEntity<?> getStudentsFromParentToken(){
+		try {
+			Authentication auth=SecurityContextHolder.getContext().getAuthentication(); 
+			String email=auth.getName();
+			ParentEntity pe=parentRep.findByEmail(email);
+			List<StudentEntity> seList=studentRep.findAllByParents(pe);	
+			
+			return new ResponseEntity<>(seList, HttpStatus.OK);
+			
+		} catch (NoSuchElementException e) {
+			return new ResponseEntity<>(new RESTError(1,"Parent not found."), HttpStatus.NOT_FOUND);
+		} catch (Exception e) {
+			return new ResponseEntity<>(new RESTError(3,"Error: "+e.getMessage()),HttpStatus.INTERNAL_SERVER_ERROR);
+		}	
+	}
+	
 	//Delete by id
 	@Override
 	public ResponseEntity<?> deleteById(String idString){

@@ -14,6 +14,8 @@ import javax.persistence.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.iktpreobuka.final_project.controllers.dto.AvgMarkDTO;
@@ -29,6 +31,7 @@ import com.iktpreobuka.final_project.entities.ProfessorEntity;
 import com.iktpreobuka.final_project.entities.ScheduleEntity;
 import com.iktpreobuka.final_project.entities.SchoolYearEntity;
 import com.iktpreobuka.final_project.entities.StudentEntity;
+import com.iktpreobuka.final_project.entities.UserEntity;
 import com.iktpreobuka.final_project.repository.MarkRepository;
 import com.iktpreobuka.final_project.repository.MarkTypeRepository;
 import com.iktpreobuka.final_project.repository.ParentRepository;
@@ -36,6 +39,7 @@ import com.iktpreobuka.final_project.repository.ProfessorRepository;
 import com.iktpreobuka.final_project.repository.ScheduleRepository;
 import com.iktpreobuka.final_project.repository.SchoolYearRepository;
 import com.iktpreobuka.final_project.repository.StudentRepository;
+import com.iktpreobuka.final_project.repository.UserRepository;
 
 @Service
 public class MarkDaoImpl implements MarkDao {
@@ -57,6 +61,9 @@ public class MarkDaoImpl implements MarkDao {
 	
 	@Autowired
 	private MarkTypeRepository markTypeRep;
+	
+	@Autowired
+	private UserRepository userRep;
 	
 	@Autowired
 	private EmailService emailService;
@@ -118,6 +125,10 @@ public class MarkDaoImpl implements MarkDao {
 	@Override
 	public ResponseEntity<?> postNewMark(MarkDTO meBody) {
 		try {
+			Authentication auth=SecurityContextHolder.getContext().getAuthentication(); 
+			String email=auth.getName();
+			UserEntity ue=userRep.findByEmail(email);
+			
 			MarkEntity mark=new MarkEntity();
 
 			Byte markValue=Byte.parseByte(meBody.getMarkValueStr());
@@ -138,14 +149,29 @@ public class MarkDaoImpl implements MarkDao {
 					return new ResponseEntity<>(new RESTError(2,"Year must be active"), HttpStatus.BAD_REQUEST);
 
 				mark.setSchedule(se);
-				mark.setRatedBy(se.getTeacher());
+				if(ue.getRole().getName() == "ROLE_PROFESSOR")
+					mark.setRatedBy(se.getTeacher());
 			} catch (NoSuchElementException e) {
 				return new ResponseEntity<>(new RESTError(1,"Schedule with number "+scheduleId+" not found."), HttpStatus.NOT_FOUND);
 			}	
 				
 			try {
-				MarkTypeEntity mte=markTypeRep.findById(markTypeId).get();
-				mark.setMarkType(mte);
+				if(markTypeId < 4) {
+					MarkTypeEntity mte=markTypeRep.findById(markTypeId).get();
+					mark.setMarkType(mte);
+				}else {
+//					if(markValue == 0) {
+//						MarkTypeEntity mte=markTypeRep.findById(5).get();
+//						mark.setMarkType(mte);
+//					}else 
+					if(markValue == 1){
+						MarkTypeEntity mte=markTypeRep.findById(6).get();
+						mark.setMarkType(mte);
+					}else {
+						MarkTypeEntity mte=markTypeRep.findById(4).get();
+						mark.setMarkType(mte);
+					}
+				}
 			} catch (NoSuchElementException e) {
 				return new ResponseEntity<>(new RESTError(1,"Mark type with number "+markTypeId+" not found."), HttpStatus.NOT_FOUND);
 			}
@@ -188,11 +214,11 @@ public class MarkDaoImpl implements MarkDao {
 				String profName=mark.getRatedBy().getName()+" "+mark.getRatedBy().getLastname();
 				String text=emailService.textTemplateMark(studentName, mark.getMarkValue(),subjectName , mark.getDateRated(),profName);
 
-				eo.setTo(pe.getEmail());
+				eo.setTo("fotos1992@gmail.com");//pe.getEmail()
 				eo.setSubject("Mark notification");
 				eo.setText(text);
 				
-//				emailService.sendSimpleMessage(eo);
+				emailService.sendSimpleMessage(eo);
 			}
 						
 			return new ResponseEntity<>(mark, HttpStatus.OK);
@@ -205,11 +231,15 @@ public class MarkDaoImpl implements MarkDao {
 			return new ResponseEntity<>(new RESTError(3,"Error: "+e.getMessage()),HttpStatus.INTERNAL_SERVER_ERROR);
 		}	
 	}
-	//POTREBNO ISPRAVITI
+
 	//Put mark by id
 	@Override
 	public ResponseEntity<?> putMarkById(MarkDTO meBody, String idString){
 		try {
+			Authentication auth=SecurityContextHolder.getContext().getAuthentication(); 
+			String email=auth.getName();
+			UserEntity ue=userRep.findByEmail(email);
+			
 			Integer id=Integer.parseInt(idString);			
 			MarkEntity me=markRep.findById(id).get();
 			
@@ -232,24 +262,12 @@ public class MarkDaoImpl implements MarkDao {
 				try {
 					ScheduleEntity se=scheduleRep.findById(sceduleId).get();
 					me.setSchedule(se);
-					me.setRatedBy(se.getTeacher());
+					if(ue.getRole().getName() == "ROLE_PROFESSOR")
+						me.setRatedBy(se.getTeacher());
 				} catch (NoSuchElementException e) {
 					return new ResponseEntity<>(new RESTError(1,"Schedule with number "+sceduleId+" not found."), HttpStatus.NOT_FOUND);
 				}
 			}
-			
-			if(meBody.getMarkTypeStr()!=null){
-				Integer typeId=Integer.parseInt(meBody.getMarkTypeStr());
-				if(typeId<1)
-					return new ResponseEntity<>(new RESTError(2,"Mark type id number must be greater than 0!"), HttpStatus.BAD_REQUEST);	
-				try {
-					MarkTypeEntity mte=markTypeRep.findById(typeId).get();
-					me.setMarkType(mte);
-				} catch (NoSuchElementException e) {
-					return new ResponseEntity<>(new RESTError(1,"Mark type with number "+typeId+" not found."), HttpStatus.NOT_FOUND);
-				}
-			}
-			
 			
 			if(meBody.getMarkValueStr()!=null) {
 				Byte markInt=Byte.parseByte(meBody.getMarkValueStr());
@@ -258,6 +276,36 @@ public class MarkDaoImpl implements MarkDao {
 				me.setMarkValue(markInt);
 			}
 			
+			if(meBody.getMarkTypeStr()!=null){
+				Integer typeId=Integer.parseInt(meBody.getMarkTypeStr());
+				if(typeId<1)
+					return new ResponseEntity<>(new RESTError(2,"Mark type id number must be greater than 0!"), HttpStatus.BAD_REQUEST);	
+				try {
+					if(typeId < 4) {
+						MarkTypeEntity mte=markTypeRep.findById(typeId).get();
+						me.setMarkType(mte);
+					}else {
+//						if(me.getMarkValue() == 0) {
+//							MarkTypeEntity mte=markTypeRep.findById(5).get();
+//							me.setMarkType(mte);
+//						}else 
+						if(me.getMarkValue() == 1){
+							MarkTypeEntity mte=markTypeRep.findById(6).get();
+							me.setMarkType(mte);
+						}else {
+							MarkTypeEntity mte=markTypeRep.findById(4).get();
+							me.setMarkType(mte);
+						}
+					}				
+				} catch (NoSuchElementException e) {
+					return new ResponseEntity<>(new RESTError(1,"Mark type with number "+typeId+" not found."), HttpStatus.NOT_FOUND);
+				}
+				
+				
+			}
+			
+			
+
 			if(meBody.getDescriptionStr()!=null) {
 				if(meBody.getDescriptionStr().length()>49)
 					return new ResponseEntity<>(new RESTError(2,"Description must be less than 50 characters long."), HttpStatus.BAD_REQUEST);
@@ -276,7 +324,7 @@ public class MarkDaoImpl implements MarkDao {
 				String profName=me.getRatedBy().getName()+" "+me.getRatedBy().getLastname();
 				String text=emailService.textTemplateMark(studentName, me.getMarkValue(),subjectName , me.getDateRated(),profName);
 
-				eo.setTo(pe.getEmail());
+				eo.setTo("fotos1992@gmail.com"); // pe.getEmail()
 				eo.setSubject("Mark notification");
 				eo.setText(text);
 				

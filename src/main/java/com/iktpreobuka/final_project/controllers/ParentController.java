@@ -4,6 +4,7 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,6 +20,8 @@ import com.iktpreobuka.final_project.services.ParentDao;
 
 @RestController
 @RequestMapping("/parent")
+//@CrossOrigin(origins="http://localhost:4200", allowedHeaders="*")//
+@CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true", allowedHeaders = "*")
 public class ParentController {
 	
 	@Autowired
@@ -45,6 +48,20 @@ public class ParentController {
 	@JsonView(Views.Private.class)
 	public ResponseEntity<?> getParentById_parent(@PathVariable String id){
 		return parentDao.getParentById(id);
+	}
+	
+	//Find by token ||PARENT
+	@RequestMapping(method=RequestMethod.GET,value="/parent/")
+	@JsonView(Views.Private.class)
+	public ResponseEntity<?> getParentFromToken_parent(){
+		return parentDao.getParentFromToken();
+	}
+	
+	//Find all students by parent token ||PARENT
+	@RequestMapping(method=RequestMethod.GET,value="/parent/find_students/")
+	@JsonView(Views.Private.class)
+	public ResponseEntity<?> getStudentsFromParentToken_parent(){
+		return parentDao.getStudentsFromParentToken();
 	}
 	
 	//Delete by id

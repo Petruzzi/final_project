@@ -11,6 +11,8 @@ public interface StudentDao {
 	
 	public ResponseEntity<?> getStudentById(String idString);
 	
+	public ResponseEntity<?> getStudentFromToken();
+	
 	public ResponseEntity<?> deleteById(String idString);
 	
 	public ResponseEntity<?> postNewStudent(StudentDTO seBody);
@@ -18,4 +20,12 @@ public interface StudentDao {
 	public ResponseEntity<?> putStudentById(StudentDTO seBody, String idString);
 	
 	public ResponseEntity<?> changePassword(ChangePasswordDTO cpBody,String idString);
+	
+	
+	
+	
+	
+	
+	
+	
 }

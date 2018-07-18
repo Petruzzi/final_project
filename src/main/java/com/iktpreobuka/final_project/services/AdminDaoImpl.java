@@ -1,5 +1,8 @@
 package com.iktpreobuka.final_project.services;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,6 +67,12 @@ public class AdminDaoImpl implements AdminDao{
 		}
 	}
 
+	//Find  by token
+	@Override
+	public ResponseEntity<?> getAdminFromToken(){
+			return userDao.getUserFromToken();	
+	}
+	
 	//Delete by id 
 	@Override
 	public ResponseEntity<?> deleteById(String idString) {
@@ -175,5 +184,35 @@ public class AdminDaoImpl implements AdminDao{
 		return userDao.resetUserPassword(idString);
 	}
 	
+	//get Log
+	@Override
+	public ResponseEntity<?> getLog(){
+		FileReader fr=null;
+		BufferedReader br=null;
+		try {
+// buff reader 7000linija 35 sec   ......scanner 50 sec		
+// 4500linije concat() = 8 sec ....""+ ""=16 sec... string builder=6
+			fr=new FileReader("logs/spring-boot-logging.log");
+			br=new BufferedReader(fr);
+			StringBuilder sb=new StringBuilder("");
+			String r;
+			while((r=br.readLine())!=null)
+				sb.append(r).append("\n");
+			
+			return new ResponseEntity<>(sb, HttpStatus.OK);
+		
+		} catch (Exception e) {
+			return new ResponseEntity<>(new RESTError(3,"Error: "+e.getMessage()),HttpStatus.INTERNAL_SERVER_ERROR);
+		}finally {
+			try {
+				if(fr!=null)
+					fr.close();
+				if(br!=null)
+					br.close();
+			} catch (IOException e) {
+				return new ResponseEntity<>(new RESTError(3,"Error: "+e.getMessage()),HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+		}
+	}
 	
 }

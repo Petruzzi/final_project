@@ -11,6 +11,10 @@ public interface ParentDao {
 	
 	public ResponseEntity<?> getParentById(String idString);
 	
+	public ResponseEntity<?> getParentFromToken();
+	
+	public ResponseEntity<?> getStudentsFromParentToken();
+	
 	public ResponseEntity<?> deleteById(String idString);
 	
 	public ResponseEntity<?> postNewParent(ParentDTO peBody);
@@ -18,4 +22,6 @@ public interface ParentDao {
 	public ResponseEntity<?> putParentById(ParentDTO peBody, String idString);
 	
 	public ResponseEntity<?> changePassword(ChangePasswordDTO cpBody,String idString);
+	
+	
 }

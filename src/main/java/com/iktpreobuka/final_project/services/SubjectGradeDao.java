@@ -15,4 +15,6 @@ public interface SubjectGradeDao {
 	public ResponseEntity<?> postNewSubjectGrade(SubjectGradeDTO sgeBody);
 	
 	public ResponseEntity<?> putSubjectGradeById(SubjectGradeDTO sgeBody, String idString);
+	
+	public ResponseEntity<?> getSubjectsByStudentId(String idString);
 }

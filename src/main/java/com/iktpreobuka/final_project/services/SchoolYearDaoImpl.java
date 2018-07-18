@@ -127,7 +127,7 @@ public class SchoolYearDaoImpl implements SchoolYearDao {
 		}	
 	}
 	//POTREBNO ISPRAVITI
-	//Put professor by id
+	//Put school year by id
 	@Override
 	public ResponseEntity<?> putSchoolYearById(SchoolYearDTO syeBody, String idString){
 		

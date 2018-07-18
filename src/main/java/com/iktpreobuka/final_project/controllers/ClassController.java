@@ -37,6 +37,13 @@ public class ClassController {
 		return classDao.getClassById(id);
 	}
 	
+	//Find by id | USER
+	@RequestMapping(method=RequestMethod.GET,value="/user/{id}")
+	@JsonView(Views.Private.class)
+	public ResponseEntity<?> getClassById_user(@PathVariable String id){
+		return classDao.getClassById(id);
+	}
+	
 	//Delete by id
 	@RequestMapping(method=RequestMethod.DELETE,value="/{id}")
 	@JsonView(Views.Admin.class)
@@ -58,14 +65,21 @@ public class ClassController {
 		return classDao.putClassById(ce,id);
 	}
 
-	//Get class by prof
+	//Get all class by prof | PROFESSOR
 	@RequestMapping(method=RequestMethod.GET,value="/professor/by_prof/{id}")
 	@JsonView(Views.Professor.class)
-	public ResponseEntity<?> putClassByProf_professor(@PathVariable String id){
+	public ResponseEntity<?> getClassByProf_professor(@PathVariable String id){
+		return classDao.getClassByProf(id);
+	}
+	
+	//Get all class by prof | ADMIN
+	@RequestMapping(method=RequestMethod.GET,value="/by_prof/{id}")
+	@JsonView(Views.Admin.class)
+	public ResponseEntity<?> getClassByProf_admin(@PathVariable String id){
 		return classDao.getClassByProf(id);
 	}
 
-	//Get class by head teacher
+	//Get class by head teacher | PROFESSOR
 	@RequestMapping(method=RequestMethod.GET,value="/professor/by_head_teacher/{id}")
 	@JsonView(Views.Professor.class)
 	public ResponseEntity<?> putClassByHeadTeacher_professor(@PathVariable String id){

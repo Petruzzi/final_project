@@ -47,6 +47,12 @@ public class StudentController {
 		return studentDao.getStudentById(id);
 	}
 	
+	//Find by token ||STUDENT
+	@RequestMapping(method=RequestMethod.GET,value="/student/")
+	@JsonView(Views.Private.class)
+	public ResponseEntity<?> getStudentFromToken_student(){
+		return studentDao.getStudentFromToken();
+	}
 	
 	//Delete by id
 	@RequestMapping(method=RequestMethod.DELETE,value="/{id}")

@@ -25,7 +25,7 @@ import com.iktpreobuka.final_project.security.Views;
 public class GradeEntity {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
-	@JsonView(Views.Admin.class)
+	@JsonView(Views.Private.class)
 	private Integer id;
 	
 	@NotNull(message="Grade must be provided.")

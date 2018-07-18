@@ -71,6 +71,12 @@ public class ProfessorDaoImpl implements ProfessorDao {
 		}	
 	}
 	
+	//Find  professor by token
+	@Override
+	public ResponseEntity<?> getProfessorFromToken(){
+			return userDao.getUserFromToken();	
+	}
+	
 	//Delete by id
 	@Override
 	public ResponseEntity<?> deleteById(String idString){
@@ -180,7 +186,7 @@ public class ProfessorDaoImpl implements ProfessorDao {
 			}
 			
 			
-			if(peBody.getSubjectIdsStr().size()>0) {
+			//if(peBody.getSubjectIdsStr().size()>0) {
 				for(String idStr : peBody.getSubjectIdsStr()) {
 					Integer intId=Integer.parseInt(idStr);
 					try {
@@ -190,7 +196,7 @@ public class ProfessorDaoImpl implements ProfessorDao {
 					}
 				}
 				pe.setSubjects(sgeList);
-			}
+			//}
 			
 			professorRep.save(pe);
 			return new ResponseEntity<>(pe, HttpStatus.OK);

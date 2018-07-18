@@ -19,5 +19,12 @@ public interface UserDao {
 	
 	public ResponseEntity<?> changePassword(ChangePasswordDTO cpBody,String idString);
 	
+	public ResponseEntity<?> changePasswordByToken(ChangePasswordDTO cpBody);
+	
 	public ResponseEntity<?> resetUserPassword(String idString);
+	
+	public ResponseEntity<?> getUserFromToken();
+	
+	public ResponseEntity<?> getUserById(String id);
+	
 }

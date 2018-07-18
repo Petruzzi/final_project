@@ -9,4 +9,6 @@ import com.iktpreobuka.final_project.entities.StudentEntity;
 
 public interface StudentRepository extends CrudRepository<StudentEntity, Integer>{
 	public List<StudentEntity> findAllByParents(ParentEntity pe);
+	
+	
 }

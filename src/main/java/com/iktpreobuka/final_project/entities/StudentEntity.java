@@ -24,11 +24,7 @@ public class StudentEntity extends UserEntity{
 	@JsonIgnore
 	@OneToMany(mappedBy="student",fetch=FetchType.LAZY,cascade=CascadeType.REFRESH)
 	private List<MarkEntity> marks=new ArrayList<MarkEntity>();
-	
-	@JsonIgnore
-	@OneToMany(mappedBy="student",fetch=FetchType.LAZY,cascade=CascadeType.REFRESH)
-	private List<FinalMarkEntity> finalMarks=new ArrayList<FinalMarkEntity>();
-	
+
 	@JsonIgnore
 	@ManyToMany(fetch=FetchType.LAZY,cascade=CascadeType.REFRESH)
 	@JoinTable(name="parent_student",joinColumns=
@@ -37,10 +33,10 @@ public class StudentEntity extends UserEntity{
 			{@JoinColumn(name="parent_id",nullable=false,updatable=false)})
 	List<ParentEntity> parents=new ArrayList<ParentEntity>();
 	
-	
+	@JsonIgnore
 	@ManyToOne(fetch=FetchType.LAZY,cascade=CascadeType.REFRESH)
-	@JoinColumn(name="classEntity")
-	@JsonView(Views.Private.class)
+	@JoinColumn(name="class")
+	//@JsonView(Views.Private.class)
 	private ClassEntity classEntity;
 	
 	
@@ -57,13 +53,6 @@ public class StudentEntity extends UserEntity{
 		this.marks = marks;
 	}
 
-	public List<FinalMarkEntity> getFinalMarks() {
-		return finalMarks;
-	}
-
-	public void setFinalMarks(List<FinalMarkEntity> final_marks) {
-		this.finalMarks = final_marks;
-	}
 
 	public List<ParentEntity> getParents() {
 		return parents;

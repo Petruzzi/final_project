@@ -30,7 +30,7 @@ public abstract class UserEntity {
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
-	@JsonView(Views.Admin.class)
+	@JsonView(Views.Private.class)
 	private Integer id;
 	
 	@JsonView(Views.Private.class)
@@ -50,7 +50,7 @@ public abstract class UserEntity {
 	private String email;
 	
 
-	
+	@JsonView(Views.Private.class)
 	@ManyToOne( fetch = FetchType.LAZY,cascade = { CascadeType.REFRESH })
 	@JoinColumn(name="role")
 	private RoleEntity role;

@@ -29,10 +29,24 @@ public class SubjectGradeController {
 		return subjectGradeDao.findAll();
 	}
 	
+	//Find all || USER
+	@RequestMapping(method=RequestMethod.GET,value="/user/")
+	@JsonView(Views.Private.class)
+	public ResponseEntity<?> getAllSubjectGrades_user(){
+		return subjectGradeDao.findAll();
+	}
+	
 	//Find by id
 	@RequestMapping(method=RequestMethod.GET,value="/{id}")
 	@JsonView(Views.Admin.class)
 	public ResponseEntity<?> getSubjectGradeById(@PathVariable String id){
+		return subjectGradeDao.getSubjectGradeById(id);
+	}
+	
+	//Find by id || USER
+	@RequestMapping(method=RequestMethod.GET,value="/user/{id}")
+	@JsonView(Views.Private.class)
+	public ResponseEntity<?> getSubjectGradeBy_userId(@PathVariable String id){
 		return subjectGradeDao.getSubjectGradeById(id);
 	}
 		
@@ -55,6 +69,13 @@ public class SubjectGradeController {
 	@JsonView(Views.Admin.class)
 	public ResponseEntity<?> putSubjectGradeById(@RequestBody SubjectGradeDTO sge,@PathVariable String id){
 		return subjectGradeDao.putSubjectGradeById(sge,id);
+	}
+	
+	//Get subjects list by student id || ALL USERS
+	@RequestMapping(method=RequestMethod.GET,value="/get_subject_by_student_id/{id}")
+	@JsonView(Views.Private.class)
+	public ResponseEntity<?> getSubjectsByStudentId(@PathVariable String id){
+		return subjectGradeDao.getSubjectsByStudentId(id);
 	}
 	
 }

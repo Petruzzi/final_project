@@ -24,10 +24,10 @@ public class RoleEntity {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@JsonView(Views.Admin.class)
+	@JsonView(Views.Private.class)
 	private Integer id;
 	
-	@JsonView(Views.Admin.class)
+	@JsonView(Views.Private.class)
 	private String name;
 	
 	

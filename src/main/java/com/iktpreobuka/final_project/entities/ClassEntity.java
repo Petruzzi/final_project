@@ -25,7 +25,7 @@ public class ClassEntity {
 
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
-	@JsonView(Views.Admin.class)
+	@JsonView(Views.Private.class)
 	private Integer id;
 	
 	@JsonView(Views.Private.class)
@@ -52,8 +52,9 @@ public class ClassEntity {
 	@JsonView(Views.Private.class)
 	private GradeEntity grade;
 
-	@JsonIgnore
+	//@JsonIgnore
 	@OneToMany(mappedBy="classEntity",fetch=FetchType.LAZY,cascade=CascadeType.REFRESH)
+	@JsonView(Views.Private.class)
 	private List<StudentEntity> students=new ArrayList<StudentEntity>();
 	
 	public ClassEntity(){

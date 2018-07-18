@@ -41,11 +41,7 @@ public class ProfessorEntity extends UserEntity{
 	
 
 	
-	@JsonIgnore
-	@OneToMany(mappedBy="ratedBy",fetch=FetchType.LAZY,cascade=CascadeType.REFRESH)
-	private List<FinalMarkEntity> finalMarksRated=new ArrayList<FinalMarkEntity>();
-	
-	
+
 	@JsonIgnore
 	@OneToMany(mappedBy="ratedBy",fetch=FetchType.LAZY,cascade=CascadeType.REFRESH)
 	private List<MarkEntity> marksRated=new ArrayList<MarkEntity>();
@@ -83,13 +79,7 @@ public class ProfessorEntity extends UserEntity{
 		this.subjects = subjects;
 	}
 
-	public List<FinalMarkEntity> getFinalMarksRated() {
-		return finalMarksRated;
-	}
 
-	public void setFinalMarksRated(List<FinalMarkEntity> finalMarksRate) {
-		this.finalMarksRated = finalMarksRate;
-	}
 
 	public List<MarkEntity> getMarksRated() {
 		return marksRated;
