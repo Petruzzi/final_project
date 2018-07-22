@@ -57,4 +57,11 @@ public class ScheduleController {
 	public ResponseEntity<?> putScheduleById(@RequestBody ScheduleDTO se,@PathVariable String id){
 		return scheduleDao.putScheduleById(se,id);
 	}
+	
+	// get all active schedules by student id | USER
+	@RequestMapping(method=RequestMethod.GET,value="/user/get_schedules_by_student_id/{id}")
+	@JsonView(Views.Private.class)
+	public ResponseEntity<?> getSchedulesByStudentId_user(@PathVariable String id){
+		return scheduleDao.getSchedulesByStudentId(id);
+	}
 }

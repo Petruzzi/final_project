@@ -10,6 +10,8 @@ public interface ClassDao {
 	
 	public ResponseEntity<?> getClassById(String idString);
 	
+	public ResponseEntity<?> getClassByStudentId(String studId);
+	
 	public ResponseEntity<?> deleteById(String idString);
 	
 	public ResponseEntity<?> postNewClass(ClassDTO ceBody);

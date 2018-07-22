@@ -3,10 +3,12 @@ package com.iktpreobuka.final_project.controllers.dto;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class ParentDTO extends UserDTO {
 
 
-	
+	@JsonProperty("students")
 	List<String> studentIdsStr=new ArrayList<String>();
 
 	public ParentDTO() {

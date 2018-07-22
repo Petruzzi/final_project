@@ -29,13 +29,17 @@ public class ResourceServerConfiguration extends ResourceServerConfigurerAdapter
         .and().authorizeRequests()
        // .antMatchers("/users/**").access("hasRole('USER') or hasRole('ADMIN')")
      //.antMatchers("/users/**").hasRole("USER")
-     
+        .antMatchers("/student/test/**").permitAll()
+          
+        
+        .antMatchers("/school_year/get_active_semester/**").permitAll()
         .antMatchers("/user/admin/**").hasRole("ADMIN")
         .antMatchers("/user/**").permitAll()
         .antMatchers("/class/user/**").permitAll()
         .antMatchers("/mark/user/**").permitAll()
         .antMatchers("/subject_grade/get_subject_by_student_id/**").permitAll()
         .antMatchers("/subject_grade/user/**").permitAll()
+        .antMatchers("/schedule/user/get_schedules_by_student_id/**").permitAll()
         
         //PARENT ACCESS
         .antMatchers("/parent/parent/**").hasRole("PARENT")

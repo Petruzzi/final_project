@@ -19,7 +19,7 @@ public class Check {
 		if(x.getClass().equals(StudentEntity.class)) {
 			System.out.println("pronasao studenta");	
 			StudentEntity se=(StudentEntity)x;
-			if( se.getMarks().size()<1 )//&& se.getClassEntity()==null
+			if( se.getMarks().size()<1)//&& se.getClassEntity()==null
 				return true;
 			else
 				return false;			
@@ -80,7 +80,7 @@ public class Check {
 		}		
 		
 		if(x.getClass().equals(GradeEntity.class)) {
-			System.out.println("pronasao class");
+			System.out.println("pronasao grade");
 			GradeEntity ge=(GradeEntity)x;	
 			if(ge.getClassEntity().size()<1 && ge.getSubjects().size()<1)
 				return true;
@@ -106,7 +106,16 @@ public class Check {
 		
 		//System.out.println("nije nadjen");
 		return 0;
-		}
+	}
+	
+	
+
+	
+	
+	
+	
+	
+	
 	
 	
 	public static void main(String[] args) {

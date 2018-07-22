@@ -25,7 +25,7 @@ public interface StudentDao {
 	
 	
 	
-	
+//	public void test();
 	
 	
 }

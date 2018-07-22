@@ -22,10 +22,10 @@ public class ScheduleDTO {
 	@JsonProperty("classEntity")
 	private String classEntityStr;
 	
-	@NotNull(message="School year must be provided.")
-	@Min(value=1, message="School year number must be greater than 0!")
-	@JsonProperty("schoolYear")
-	private String schoolYearStr;
+//	@NotNull(message="School year must be provided.")
+//	@Min(value=1, message="School year number must be greater than 0!")
+//	@JsonProperty("schoolYear")
+//	private String schoolYearStr;
 
 	public ScheduleDTO() {
 		super();
@@ -55,14 +55,14 @@ public class ScheduleDTO {
 		this.classEntityStr = classEntityStr;
 	}
 
-	public String getSchoolYearStr() {
-		return schoolYearStr;
-	}
-
-	public void setSchoolYearStr(String schoolYearStr) {
-		this.schoolYearStr = schoolYearStr;
-	}
-	
+//	public String getSchoolYearStr() {
+//		return schoolYearStr;
+//	}
+//
+//	public void setSchoolYearStr(String schoolYearStr) {
+//		this.schoolYearStr = schoolYearStr;
+//	}
+//	
 	
 	
 	

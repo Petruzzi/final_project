@@ -1,6 +1,5 @@
 package com.iktpreobuka.final_project.controllers.util;
 
-import java.util.Calendar;
 import java.util.Date;
 
 public class DateValidation {
@@ -46,20 +45,20 @@ public class DateValidation {
 	
 	
 	
-	public static void main(String[] args) {
-		Date d1=new Date(1519862400000l); 
-		Date d2=new Date(1519862500000l); 
-		Date d3=new Date(1275782400000l); 
-		//System.out.println(DateValidation.checkStartSemesterEndDates(d1, d2, d3));
-		
-		
-		
-		
-		Calendar d=Calendar.getInstance();
-		
-		d.setTime(d3);
-		int a=d.get(Calendar.YEAR);
-		System.out.println(a);
-		
-	}
+//	public static void main(String[] args) {
+//		Date d1=new Date(1519862400000l); 
+//		Date d2=new Date(1519862500000l); 
+//		Date d3=new Date(1275782400000l); 
+//		//System.out.println(DateValidation.checkStartSemesterEndDates(d1, d2, d3));
+//		
+//		
+//		
+//		
+//		Calendar d=Calendar.getInstance();
+//		
+//		d.setTime(d3);
+//		int a=d.get(Calendar.YEAR);
+//		System.out.println(a);
+//		
+//	}
 }

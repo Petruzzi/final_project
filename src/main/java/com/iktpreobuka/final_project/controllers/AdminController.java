@@ -1,19 +1,13 @@
 package com.iktpreobuka.final_project.controllers;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,14 +81,14 @@ public class AdminController {
 		return adminDao.changePassword(cpe,id);
 	}
 	
-	//change admin  password by id
+	//reset  password by id
 	@RequestMapping(method=RequestMethod.PUT,value="/reset_password/{id}")
 	@JsonView(Views.Admin.class)
-	public ResponseEntity<?> resetUserPassword(@RequestBody ChangePasswordDTO cpe,@PathVariable String id){
+	public ResponseEntity<?> resetUserPassword(@PathVariable String id){//@RequestBody ChangePasswordDTO cpe,
 		return adminDao.resetUserPassword(id);
 	}
 	
-	//get log
+	//get log as string
 	@RequestMapping(method=RequestMethod.GET,value="/log/")
 	@JsonView(Views.Admin.class)
 	public ResponseEntity<?> getLog(){
@@ -103,40 +97,10 @@ public class AdminController {
 	
 	
 	//get log
-	@RequestMapping(value="/test/")
+	@RequestMapping(method=RequestMethod.GET,value="/log_download/")
 	@JsonView(Views.Admin.class)
-
-		public void openPDF(HttpServletRequest req,HttpServletResponse res){
-		 try {
-		      ServletContext context = req.getServletContext();
-		     
-		     HttpSession session = req.getSession();   
-		      
-		      String fileName = "spring-boot-logging.log";
-		      res.setContentType("application/pdf");//octet-stream
-		      res.setHeader("Expires", "0");
-		      res.setHeader("Cache-Control","must-revalidate, post-check=0, pre-check=0");
-		      res.setHeader("Content-Disposition","inline;filename=" + fileName);
-		      res.setHeader("Accept-Ranges", "bytes");
-		      File nfsPDF = new File("logs/"+fileName);
-		      FileInputStream fis = new FileInputStream(nfsPDF);
-		      BufferedInputStream bis = new BufferedInputStream(fis);
-		      ServletOutputStream sos = res.getOutputStream();
-		      byte[] buffer = new byte[2048];
-		      while (true) {
-		        int bytesRead = bis.read(buffer, 0, buffer.length);
-		        if (bytesRead < 0) {
-		          break;
-		        }
-		      sos.write(buffer, 0, bytesRead);
-		      sos.flush();
-		      }
-		      sos.flush();
-		      bis.close();
-		    } catch (Exception e) {
-		      e.printStackTrace();
-		    }
-		
+	public ResponseEntity<?> downloadLog(HttpServletRequest req,HttpServletResponse res){
+			return  adminDao.downloadLog(req, res);
 	}
 	
 	

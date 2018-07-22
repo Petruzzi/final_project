@@ -1,5 +1,7 @@
 package com.iktpreobuka.final_project.services;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,8 +16,6 @@ import com.iktpreobuka.final_project.controllers.util.EmailObject;
 import com.iktpreobuka.final_project.controllers.util.Encryption;
 import com.iktpreobuka.final_project.controllers.util.PasswordValidation;
 import com.iktpreobuka.final_project.controllers.util.RESTError;
-import com.iktpreobuka.final_project.entities.ParentEntity;
-import com.iktpreobuka.final_project.entities.StudentEntity;
 import com.iktpreobuka.final_project.entities.UserEntity;
 import com.iktpreobuka.final_project.repository.UserRepository;
 
@@ -87,19 +87,21 @@ public class UserDaoImpl implements UserDao {
 			String pass=passwordVaidation.generatePass();
 			
 			ue.setPassword(Encryption.getPassEncoded(pass));
-			
 			userRep.save(ue);
 			
 			EmailObject eo=new EmailObject();
 			String text=emailService.textTemplatePass(pass);
 
-			eo.setTo(ue.getEmail());
+			eo.setTo("fotos1992@gmail.com");//ue.getEmail()
 			eo.setSubject("Password notification");
 			eo.setText(text);
 			
 			emailService.sendSimpleMessage(eo);
-			
-			return new ResponseEntity<>(ue, HttpStatus.OK);
+		      
+		    List<String> msg=new ArrayList<String>(); 
+		    msg.add("Password successfully changed");
+		      
+			return new ResponseEntity<>(msg, HttpStatus.OK);
 				
 		} catch (NoSuchElementException e) {
 			return new ResponseEntity<>(new RESTError(1,"User not found."), HttpStatus.NOT_FOUND);
@@ -143,4 +145,23 @@ public class UserDaoImpl implements UserDao {
 			return new ResponseEntity<>(new RESTError(3,"Error: "+e.getMessage()),HttpStatus.INTERNAL_SERVER_ERROR);
 		}	
 	}
+	
+	
+	
+	
+	// metoda za proveru jedinstvenosti emaila
+	public Boolean checkEmail(String str) {
+		UserEntity ue = userRep.findByEmail(str);
+		if(ue == null) {
+			return true;
+		}else
+			return false;
+	}
+
+	
+
 }	
+
+	
+
+

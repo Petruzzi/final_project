@@ -15,4 +15,6 @@ public interface ScheduleDao {
 	public ResponseEntity<?> postNewSchedule(ScheduleDTO seBody);
 	
 	public ResponseEntity<?> putScheduleById(ScheduleDTO seBody, String idString);
+	
+	public ResponseEntity<?> getSchedulesByStudentId(String idString);
 }

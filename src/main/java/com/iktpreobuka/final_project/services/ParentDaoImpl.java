@@ -15,14 +15,12 @@ import com.iktpreobuka.final_project.controllers.dto.ChangePasswordDTO;
 import com.iktpreobuka.final_project.controllers.dto.ParentDTO;
 import com.iktpreobuka.final_project.controllers.util.Check;
 import com.iktpreobuka.final_project.controllers.util.EmailObject;
-import com.iktpreobuka.final_project.controllers.util.EmailValidation;
 import com.iktpreobuka.final_project.controllers.util.Encryption;
 import com.iktpreobuka.final_project.controllers.util.PasswordValidation;
 import com.iktpreobuka.final_project.controllers.util.RESTError;
-import com.iktpreobuka.final_project.entities.AdminEntity;
+import com.iktpreobuka.final_project.controllers.util.RegExValidation;
 import com.iktpreobuka.final_project.entities.ParentEntity;
 import com.iktpreobuka.final_project.entities.StudentEntity;
-import com.iktpreobuka.final_project.entities.UserEntity;
 import com.iktpreobuka.final_project.repository.ParentRepository;
 import com.iktpreobuka.final_project.repository.RoleRepository;
 import com.iktpreobuka.final_project.repository.StudentRepository;
@@ -137,21 +135,26 @@ public class ParentDaoImpl implements ParentDao {
 			String pass=passwordVaidation.generatePass();
 			List<StudentEntity> seList =new ArrayList<StudentEntity>();	
 
-			for(String idStr : peBody.getStudentIdsStr()) {
-				Integer intId=Integer.parseInt(idStr);
-				try {
-					seList.add(studentRep.findById(intId).get());
-				} catch (NoSuchElementException e) {
-					return new ResponseEntity<>(new RESTError(1,"Student with number "+intId+" not found."), HttpStatus.NOT_FOUND);
+			if(userDao.checkEmail(peBody.getEmail()))
+				parent.setEmail(peBody.getEmail());	
+			else
+				return new ResponseEntity<>(new RESTError(2,"Email must be unique."), HttpStatus.BAD_REQUEST);		
+			
+			if(peBody.getStudentIdsStr() != null)
+				for(String idStr : peBody.getStudentIdsStr()) {
+					Integer intId=Integer.parseInt(idStr);
+					try {
+						seList.add(studentRep.findById(intId).get());
+					} catch (NoSuchElementException e) {
+						return new ResponseEntity<>(new RESTError(1,"Student with number "+intId+" not found."), HttpStatus.NOT_FOUND);
+					}
 				}
-			}
 			
 			parent.setStudents(seList);
 			parent.setName(peBody.getName());
 			parent.setLastname(peBody.getLastname());
 			parent.setUsername(peBody.getUsername());
-			parent.setPassword(pass);
-			parent.setEmail(peBody.getEmail());	
+			parent.setPassword(Encryption.getPassEncoded(pass));
 			parent.setRole(roleRep.findById(4).get());
 					
 			parentRep.save(parent);
@@ -159,7 +162,7 @@ public class ParentDaoImpl implements ParentDao {
 			EmailObject eo=new EmailObject();
 			String text=emailService.textTemplatePass(pass);
 
-			eo.setTo(parent.getEmail());
+			eo.setTo("fotos1992@gmail.com");//parent.getEmail()
 			eo.setSubject("Password notification");
 			eo.setText(text);
 			
@@ -184,13 +187,19 @@ public class ParentDaoImpl implements ParentDao {
 			
 			if(peBody.getName()!=null)
 				if(peBody.getName().length()>=3 && peBody.getName().length()<=15)
-					pe.setName(peBody.getName());	
+					if(RegExValidation.validateFirstLetter(peBody.getName()))
+						pe.setName(peBody.getName());
+					else
+						return new ResponseEntity<>(new RESTError(2,"First name format must be first letter uppercase then lowercase(e.g. Name)"), HttpStatus.BAD_REQUEST);
 				else	
 					return new ResponseEntity<>(new RESTError(2,"First name must be between 3 and 15 characters long."), HttpStatus.BAD_REQUEST);
 		
 			if(peBody.getLastname()!=null)
 				if(peBody.getLastname().length()>=3 && peBody.getLastname().length()<=15)
-					pe.setLastname(peBody.getLastname());	
+					if(RegExValidation.validateFirstLetter(peBody.getLastname()))
+						pe.setLastname(peBody.getLastname());	
+					else
+						return new ResponseEntity<>(new RESTError(2,"Lastname format must be first letter uppercase then lowercase(e.g. Name)"), HttpStatus.BAD_REQUEST);
 				else	
 					return new ResponseEntity<>(new RESTError(2,"Last name must be between 3 and 15 characters long."), HttpStatus.BAD_REQUEST);
 			
@@ -202,13 +211,20 @@ public class ParentDaoImpl implements ParentDao {
 			
 			if(peBody.getEmail()!=null) {
 				String email=peBody.getEmail();
-				if (EmailValidation.validate(email))
-					pe.setEmail(email);
-				else
-					return new ResponseEntity<>(new RESTError(2,"Email must be exemple@gmail.com."), HttpStatus.BAD_REQUEST);
+				if(!email.equals(pe.getEmail())){
+					if (RegExValidation.validateEmail(email))
+						if(userDao.checkEmail(email))
+							pe.setEmail(email);
+						else
+							return new ResponseEntity<>(new RESTError(2,"Email must be unique."), HttpStatus.BAD_REQUEST);
+					else
+						return new ResponseEntity<>(new RESTError(2,"Email must be exemple@gmail.com."), HttpStatus.BAD_REQUEST);
+				}
 			}
 			
-			if(peBody.getStudentIdsStr().size()>0) {
+
+
+			if(peBody.getStudentIdsStr() != null)
 				for(String idStr : peBody.getStudentIdsStr()) {
 					Integer intId=Integer.parseInt(idStr);
 					try {
@@ -217,8 +233,8 @@ public class ParentDaoImpl implements ParentDao {
 						return new ResponseEntity<>(new RESTError(1,"Student with number "+intId+" not found."), HttpStatus.NOT_FOUND);
 					}
 				}
-				pe.setStudents(seList);
-			}
+
+			pe.setStudents(seList);
 			
 			parentRep.save(pe);
 			return new ResponseEntity<>(pe, HttpStatus.OK);

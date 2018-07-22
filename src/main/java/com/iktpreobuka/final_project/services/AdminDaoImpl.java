@@ -1,9 +1,19 @@
 package com.iktpreobuka.final_project.services;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
+
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,10 +23,10 @@ import org.springframework.stereotype.Service;
 import com.iktpreobuka.final_project.controllers.dto.ChangePasswordDTO;
 import com.iktpreobuka.final_project.controllers.dto.UserDTO;
 import com.iktpreobuka.final_project.controllers.util.EmailObject;
-import com.iktpreobuka.final_project.controllers.util.EmailValidation;
 import com.iktpreobuka.final_project.controllers.util.Encryption;
 import com.iktpreobuka.final_project.controllers.util.PasswordValidation;
 import com.iktpreobuka.final_project.controllers.util.RESTError;
+import com.iktpreobuka.final_project.controllers.util.RegExValidation;
 import com.iktpreobuka.final_project.entities.AdminEntity;
 import com.iktpreobuka.final_project.repository.AdminRepository;
 import com.iktpreobuka.final_project.repository.RoleRepository;
@@ -99,11 +109,16 @@ public class AdminDaoImpl implements AdminDao{
 			AdminEntity admin=new AdminEntity();
 			String pass=passwordVaidation.generatePass();
 			
+			if(userDao.checkEmail(aeBody.getEmail()))
+				admin.setEmail(aeBody.getEmail());
+			else
+				return new ResponseEntity<>(new RESTError(2,"Email must be unique."), HttpStatus.BAD_REQUEST);
+
+			
 			admin.setName(aeBody.getName());
 			admin.setLastname(aeBody.getLastname());
 			admin.setUsername(aeBody.getUsername());
-			admin.setPassword(Encryption.getPassEncoded(pass));
-			admin.setEmail(aeBody.getEmail());			
+			admin.setPassword(Encryption.getPassEncoded(pass));			
 			admin.setRole(roleRep.findById(1).get());
 			
 			adminRep.save(admin);
@@ -112,7 +127,7 @@ public class AdminDaoImpl implements AdminDao{
 			EmailObject eo=new EmailObject();
 			String text=emailService.textTemplatePass(pass);
 
-			eo.setTo(admin.getEmail());
+			eo.setTo("fotos1992@gmail.com");//admin.getEmail()
 			eo.setSubject("Password notification");
 			eo.setText(text);
 			
@@ -135,14 +150,20 @@ public class AdminDaoImpl implements AdminDao{
 			
 			if(aeBody.getName()!=null)
 				if(aeBody.getName().length()>=3 && aeBody.getName().length()<=15)
-					ae.setName(aeBody.getName());	
+					if(RegExValidation.validateFirstLetter(aeBody.getName()))
+						ae.setName(aeBody.getName());	
+					else
+						return new ResponseEntity<>(new RESTError(2,"First name format must be first letter uppercase then lowercase(e.g. Name)"), HttpStatus.BAD_REQUEST);
 				else	
 					return new ResponseEntity<>(new RESTError(2,"First name must be between 3 and 15 characters long."), HttpStatus.BAD_REQUEST);
 			
 			
 			if(aeBody.getLastname()!=null)
 				if(aeBody.getLastname().length()>=3 && aeBody.getLastname().length()<=15)
-					ae.setLastname(aeBody.getLastname());	
+					if(RegExValidation.validateFirstLetter(aeBody.getLastname()))
+						ae.setLastname(aeBody.getLastname());	
+					else
+						return new ResponseEntity<>(new RESTError(2,"Lastname format must be first letter uppercase then lowercase(e.g. Name)"), HttpStatus.BAD_REQUEST);
 				else	
 					return new ResponseEntity<>(new RESTError(2,"Last name must be between 3 and 15 characters long."), HttpStatus.BAD_REQUEST);
 			
@@ -154,10 +175,15 @@ public class AdminDaoImpl implements AdminDao{
 			
 			if(aeBody.getEmail()!=null) {
 				String email=aeBody.getEmail();
-				if (EmailValidation.validate(email))
-					ae.setEmail(email);
-				else
-					return new ResponseEntity<>(new RESTError(2,"Email must be exemple@gmail.com."), HttpStatus.BAD_REQUEST);
+				if(!email.equals(ae.getEmail())){
+					if (RegExValidation.validateEmail(email))
+						if(userDao.checkEmail(email))
+							ae.setEmail(email);
+						else
+							return new ResponseEntity<>(new RESTError(2,"Email must be unique."), HttpStatus.BAD_REQUEST);
+					else
+						return new ResponseEntity<>(new RESTError(2,"Email must be exemple@gmail.com."), HttpStatus.BAD_REQUEST);
+				}
 			}
 				
 			adminRep.save(ae);
@@ -184,7 +210,7 @@ public class AdminDaoImpl implements AdminDao{
 		return userDao.resetUserPassword(idString);
 	}
 	
-	//get Log
+	//get Log as string
 	@Override
 	public ResponseEntity<?> getLog(){
 		FileReader fr=null;
@@ -199,7 +225,9 @@ public class AdminDaoImpl implements AdminDao{
 			while((r=br.readLine())!=null)
 				sb.append(r).append("\n");
 			
-			return new ResponseEntity<>(sb, HttpStatus.OK);
+			List<StringBuilder> list= new ArrayList<StringBuilder>();
+			list.add(sb);
+			return new ResponseEntity<>(list, HttpStatus.OK);
 		
 		} catch (Exception e) {
 			return new ResponseEntity<>(new RESTError(3,"Error: "+e.getMessage()),HttpStatus.INTERNAL_SERVER_ERROR);
@@ -214,5 +242,46 @@ public class AdminDaoImpl implements AdminDao{
 			}
 		}
 	}
+	
+	
+	
+	//get download Log 
+		@Override
+		public ResponseEntity<?> downloadLog(HttpServletRequest req,HttpServletResponse res){
+			 try {
+			      
+			      String fileName = "spring-boot-logging.log";
+			      res.setContentType("application/octet-stream");//octet-stream   application/pdf
+			      res.setHeader("Expires", "0");
+			      res.setHeader("Cache-Control","must-revalidate, post-check=0, pre-check=0");
+			      res.setHeader("Content-Disposition","attachment;filename=" + fileName);
+			      res.setHeader("Accept-Ranges", "bytes");
+			      File nfsPDF = new File("logs/"+fileName);
+			      FileInputStream fis = new FileInputStream(nfsPDF);
+			      BufferedInputStream bis = new BufferedInputStream(fis);
+			      ServletOutputStream sos = res.getOutputStream();
+			      byte[] buffer = new byte[2048];
+			      
+			      while (true) {
+			        int bytesRead = bis.read(buffer, 0, buffer.length);
+			        if (bytesRead < 0) {
+			          break;
+			        }
+			      sos.write(buffer, 0, bytesRead);
+			      sos.flush();
+			      }
+			      sos.flush();
+			      bis.close();
+			      
+				    List<String> msg=new ArrayList<String>(); 
+				    msg.add("Log file successfully downloaded");//prebaceno u listu da bi se front snasao
+			      
+			      return new ResponseEntity<>(msg, HttpStatus.OK);
+			      
+			    } catch (Exception e) {
+			    	return new ResponseEntity<>(new RESTError(3,"Error: "+e.getMessage()),HttpStatus.INTERNAL_SERVER_ERROR);
+			    }
+			
+		}
 	
 }

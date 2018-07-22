@@ -108,12 +108,16 @@ public class SubjectGradeDaoImpl implements SubjectGradeDao {
 			SubjectEntity se=new SubjectEntity();
 			GradeEntity ge=new GradeEntity();
 									
+			
+			
 			try {
 				se=subjectRep.findById(subjectId).get();
 				subject.setSubject(se);
 			} catch (NoSuchElementException e) {
 				return new ResponseEntity<>(new RESTError(1,"Subject with number "+subjectId+" not found."), HttpStatus.NOT_FOUND);
 			}
+			
+			
 
 			try {
 				ge=gradeRep.findById(gradeId).get();
@@ -121,7 +125,11 @@ public class SubjectGradeDaoImpl implements SubjectGradeDao {
 			} catch (NoSuchElementException e) {
 				return new ResponseEntity<>(new RESTError(1,"Grade with number "+gradeId+" not found."), HttpStatus.NOT_FOUND);
 			}
-
+			
+			if(subjectGradeRep.findAllByGradeAndSubject(ge, se).size()!=0)
+				return new ResponseEntity<>(new RESTError(1,"Subject "+se.getSubjectName()+" already exist in "+ge.getGradeValue()+". grade" ), HttpStatus.NOT_FOUND);
+			
+			
 			subject.setSubjectStatus(sgeBody.getSubjectStatus());
 			subject.setAffectAvg(sgeBody.getAffectAvg());
 			subject.setClassLoad(classLoadInt);

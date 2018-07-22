@@ -33,6 +33,17 @@ public class StudentEntity extends UserEntity{
 			{@JoinColumn(name="parent_id",nullable=false,updatable=false)})
 	List<ParentEntity> parents=new ArrayList<ParentEntity>();
 	
+	
+	@JsonIgnore
+	@ManyToMany(fetch=FetchType.LAZY,cascade=CascadeType.REFRESH)
+	@JoinTable(name="schedule_student",joinColumns=
+			{@JoinColumn(name="student_id",nullable=false,updatable=false)},
+		inverseJoinColumns=
+			{@JoinColumn(name="schedule_id",nullable=false,updatable=false)})
+	List<ScheduleEntity> schedules=new ArrayList<ScheduleEntity>();
+	
+	
+	
 	@JsonIgnore
 	@ManyToOne(fetch=FetchType.LAZY,cascade=CascadeType.REFRESH)
 	@JoinColumn(name="class")
@@ -68,6 +79,14 @@ public class StudentEntity extends UserEntity{
 
 	public void setClassEntity(ClassEntity classEntity) {
 		this.classEntity = classEntity;
+	}
+
+	public List<ScheduleEntity> getSchedules() {
+		return schedules;
+	}
+
+	public void setSchedules(List<ScheduleEntity> schedules) {
+		this.schedules = schedules;
 	}
 	
 	

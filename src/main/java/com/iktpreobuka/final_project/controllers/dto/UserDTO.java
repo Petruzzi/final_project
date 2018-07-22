@@ -16,13 +16,13 @@ public class UserDTO {
 	@Size(min=3,max=15,message="Last name must be between {min} and {max} characters long.")
 	@Pattern(regexp = "^[A-Z]{1}[a-z]+$",message="Last name format must be first letter uppercase then lowercase(e.g. Lastname)" )
 	private String lastname;
-
+	
 	@NotNull(message="Username must be provided.")
 	@Size(min=3,max=15,message="Username must be between {min} and {max} characters long.")
 	private String username;
 	
 	@NotNull(message = "Email must be provided.")
-	@Pattern(regexp = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$",message="Email must be exemple@gmail.com.")
+	@Pattern(regexp = "^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,3}$",message="Email must be exemple@gmail.com.")
 	private String email;
 
 	public UserDTO() {

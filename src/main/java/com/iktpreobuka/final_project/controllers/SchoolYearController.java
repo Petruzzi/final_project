@@ -58,4 +58,11 @@ public class SchoolYearController {
 	public ResponseEntity<?> putSchoolYearById(@RequestBody SchoolYearDTO sye,@PathVariable String id){
 		return schoolYearDao.putSchoolYearById(sye,id);
 	}
+	
+	// Get active semester | USER
+	@RequestMapping(method=RequestMethod.GET,value="/get_active_semester/")
+	@JsonView(Views.Private.class)
+	public ResponseEntity<?> getActiveSemester_user(){
+		return schoolYearDao.getActiveSemester();
+	}
 }

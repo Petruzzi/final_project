@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import com.iktpreobuka.final_project.controllers.dto.ChangePasswordDTO;
-import com.iktpreobuka.final_project.controllers.dto.ProfessorDTO;
 import com.iktpreobuka.final_project.controllers.dto.StudentDTO;
 import com.iktpreobuka.final_project.controllers.dto.UserDTO;
 import com.iktpreobuka.final_project.security.Views;
@@ -92,6 +91,22 @@ public class StudentController {
 	public ResponseEntity<?> changePassword_student(@RequestBody ChangePasswordDTO cpe,@PathVariable String id){
 		return studentDao.changePassword(cpe,id);
 	}
+	
+	
+//	//cTEST
+//	@RequestMapping(method=RequestMethod.PUT,value="/test/")
+//	@JsonView(Views.Private.class)
+//	public void test(){
+//		
+//		
+//		
+//		
+//		
+//		studentDao.test();
+//		
+//		
+//		
+//	}
 	
 }	
 

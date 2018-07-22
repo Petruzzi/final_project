@@ -44,6 +44,13 @@ public class ClassController {
 		return classDao.getClassById(id);
 	}
 	
+	//Find class by student id | USER
+	@RequestMapping(method=RequestMethod.GET,value="/user/by_student_id/{id}")
+	@JsonView(Views.Private.class)
+	public ResponseEntity<?> getClassByStudentId_user(@PathVariable String id){
+		return classDao.getClassByStudentId(id);
+	}
+	
 	//Delete by id
 	@RequestMapping(method=RequestMethod.DELETE,value="/{id}")
 	@JsonView(Views.Admin.class)

@@ -3,6 +3,7 @@ package com.iktpreobuka.final_project.services;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -93,7 +94,7 @@ public class ClassDaoImpl implements ClassDao {
 			return new ResponseEntity<>(new RESTError(3,"Error: "+e.getMessage()),HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
-	//POTREBNO ISPRAVITI----
+	
 	//Post new class
 	@Override
 	public ResponseEntity<?> postNewClass(ClassDTO ceBody) {
@@ -134,6 +135,27 @@ public class ClassDaoImpl implements ClassDao {
 				try {
 					StudentEntity se = studentRep.findById(intId).get();
 					se.setClassEntity(classE);
+					
+					
+					
+					
+					
+					// presipanje schedules iz class u student
+					
+					List<ScheduleEntity> classSchList = classE.getSchedules();
+					List<ScheduleEntity> oldStudentSchList = se.getSchedules();
+					List<ScheduleEntity> newStudentSchList = new ArrayList<ScheduleEntity>();
+					
+					
+					for(ScheduleEntity se1 : classSchList) // dodaje sve u staru listu.......OSTAJU DUPLIKATI
+						oldStudentSchList.add(se1);
+					
+					newStudentSchList = oldStudentSchList.stream() // brisanje duplikata
+														.distinct()
+														.collect(Collectors.toList());
+
+					se.setSchedules(newStudentSchList);
+					
 					seList.add(se);
 				} catch (NoSuchElementException e) {
 					return new ResponseEntity<>(new RESTError(1,"Student with number "+intId+" not found."), HttpStatus.NOT_FOUND);
@@ -155,7 +177,7 @@ public class ClassDaoImpl implements ClassDao {
 			return new ResponseEntity<>(new RESTError(3,"Error: "+e.getMessage()),HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
-	//POTREBNO ISPRAVITI
+
 	//Put class by id
 	@Override
 	public ResponseEntity<?> putClassById(ClassDTO ceBody, String idString){
@@ -205,6 +227,23 @@ public class ClassDaoImpl implements ClassDao {
 				try {
 					StudentEntity se = studentRep.findById(intId).get();
 					se.setClassEntity(classE);
+					
+					// presipanje schedules iz class u student
+					
+					List<ScheduleEntity> classSchList = classE.getSchedules();
+					List<ScheduleEntity> oldStudentSchList = se.getSchedules();
+					List<ScheduleEntity> newStudentSchList = new ArrayList<ScheduleEntity>();
+					
+					
+					for(ScheduleEntity se1 : classSchList) // dodaje sve u staru listu.......OSTAJU DUPLIKATI
+						oldStudentSchList.add(se1);
+					
+					newStudentSchList = oldStudentSchList.stream() // brisanje duplikata
+														.distinct()
+														.collect(Collectors.toList());
+
+					se.setSchedules(newStudentSchList);
+					
 					newSeList.add(se);
 				} catch (NoSuchElementException e) {
 					return new ResponseEntity<>(new RESTError(1,"Student with number "+intId+" not found."), HttpStatus.NOT_FOUND);
@@ -213,8 +252,9 @@ public class ClassDaoImpl implements ClassDao {
 			
 			studentRep.saveAll(oldSeList);
 			studentRep.saveAll(newSeList);
-			classRep.save(classE);
+			classRep.save(classE);// pazi
 			classE.setStudents(newSeList);
+			
 			return new ResponseEntity<>(classE, HttpStatus.OK);	
 
 		} catch (NoSuchElementException e) {
@@ -226,8 +266,6 @@ public class ClassDaoImpl implements ClassDao {
 		}
 	}
 	
-	
-	// PREPRAVTI DISTINCT .... DUPLIRA
 	//Get class by prof
 	@Override
 	public ResponseEntity<?> getClassByProf(String profId){
@@ -236,8 +274,11 @@ public class ClassDaoImpl implements ClassDao {
 			ProfessorEntity pe=professorRep.findById(idInt).get();
 			List<ScheduleEntity> seList=scheduleRep.findByTeacher(pe);
 			List<ClassEntity> ceList=classRep.findBySchedulesIn(seList);
-			
-			
+
+			ceList = ceList.stream() // brisanje duplikata
+					.distinct()
+					.collect(Collectors.toList());
+	
 			return new ResponseEntity<>(ceList, HttpStatus.OK);	
 			
 		} catch (NoSuchElementException e) {
@@ -257,11 +298,41 @@ public class ClassDaoImpl implements ClassDao {
 				Integer idInt=Integer.parseInt(headTeacherId);
 				ProfessorEntity pe=professorRep.findById(idInt).get();
 				ClassEntity ce=classRep.findByHeadTeacher(pe);
+				
+				if(ce==null) 
+					return new ResponseEntity<>(new RESTError(1,"Professor don`t have class."), HttpStatus.NOT_FOUND);
+				
 		
 				return new ResponseEntity<>(ce, HttpStatus.OK);	
 
 		} catch (NoSuchElementException e) {
 			return new ResponseEntity<>(new RESTError(1,"Entity not found."), HttpStatus.NOT_FOUND);
+		} catch (NumberFormatException e) {
+			return new ResponseEntity<>(new RESTError(2,"Please fill up the whole number."), HttpStatus.BAD_REQUEST);
+		} catch (Exception e) {
+			return new ResponseEntity<>(new RESTError(3,"Error: "+e.getMessage()),HttpStatus.INTERNAL_SERVER_ERROR);
+		}	
+	}
+
+	@Override
+	public ResponseEntity<?> getClassByStudentId(String studId) {
+		
+		try {
+			Integer idInt=Integer.parseInt(studId);
+			StudentEntity se=studentRep.findById(idInt).get();
+			List<StudentEntity> seList= new ArrayList<StudentEntity>();
+			seList.add(se);
+			ClassEntity ce=classRep.findByStudentsIn(seList);
+	
+			if(ce == null) {
+				
+				return new ResponseEntity<>(new RESTError(200,"Student don`t have class"), HttpStatus.OK);
+			}
+			
+			return new ResponseEntity<>(ce, HttpStatus.OK);	
+	
+		} catch (NoSuchElementException e) {
+			return new ResponseEntity<>(new RESTError(1,"Studetn not found."), HttpStatus.NOT_FOUND);
 		} catch (NumberFormatException e) {
 			return new ResponseEntity<>(new RESTError(2,"Please fill up the whole number."), HttpStatus.BAD_REQUEST);
 		} catch (Exception e) {

@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.iktpreobuka.final_project.controllers.dto.SchoolYearDTO;
+import com.iktpreobuka.final_project.controllers.util.Check;
 import com.iktpreobuka.final_project.controllers.util.DateValidation;
 import com.iktpreobuka.final_project.controllers.util.RESTError;
 import com.iktpreobuka.final_project.entities.SchoolYearEntity;
@@ -133,6 +134,26 @@ public class SchoolYearDaoImpl implements SchoolYearDao {
 		
 		try {
 			return null;
+		} catch (Exception e) {
+			return new ResponseEntity<>(new RESTError(3,"Error: "+e.getMessage()),HttpStatus.INTERNAL_SERVER_ERROR);
+		}	
+	}
+
+	@Override
+	public ResponseEntity<?> getActiveSemester() {
+		try {
+			Byte answer=-1;
+			List<SchoolYearEntity> sye = schoolYearRep.findByActive(true);
+			if(sye.size()==1) {
+				Date date=new Date();
+				answer = Check.getSemester(sye.get(0), date);
+			}else
+				return new ResponseEntity<>(new RESTError(1,"Must be exactly one active year"), HttpStatus.INTERNAL_SERVER_ERROR);
+	
+			return new ResponseEntity<>(answer, HttpStatus.OK);
+			
+		} catch (NoSuchElementException e) {
+			return new ResponseEntity<>(new RESTError(1,"School year not found."), HttpStatus.NOT_FOUND);
 		} catch (Exception e) {
 			return new ResponseEntity<>(new RESTError(3,"Error: "+e.getMessage()),HttpStatus.INTERNAL_SERVER_ERROR);
 		}	

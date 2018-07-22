@@ -1,5 +1,8 @@
 package com.iktpreobuka.final_project.services;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.http.ResponseEntity;
 
 import com.iktpreobuka.final_project.controllers.dto.ChangePasswordDTO;
@@ -24,4 +27,6 @@ public interface AdminDao {
 	public ResponseEntity<?> resetUserPassword(String idString);
 	
 	public ResponseEntity<?> getLog();
+	
+	public ResponseEntity<?> downloadLog(HttpServletRequest req,HttpServletResponse res);
 }

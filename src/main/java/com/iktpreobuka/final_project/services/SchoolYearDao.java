@@ -15,4 +15,6 @@ public interface SchoolYearDao {
 	public ResponseEntity<?> postNewSchoolYear(SchoolYearDTO syeBody);
 	
 	public ResponseEntity<?> putSchoolYearById(SchoolYearDTO syeBody, String idString);
+	
+	public ResponseEntity<?> getActiveSemester();
 }

@@ -1,8 +1,17 @@
 package com.iktpreobuka.final_project.controllers.dto;
 
+import com.fasterxml.jackson.annotation.JsonView;
+import com.iktpreobuka.final_project.security.Views;
+
 public class AvgMarkDTO {
+	
+	@JsonView(Views.Admin.class)
 	private Integer studentID;
+	
+	@JsonView(Views.Admin.class)
 	private Integer scheduleID;
+	
+	@JsonView(Views.Admin.class)
 	private Double avg;
 	
 	public AvgMarkDTO() {

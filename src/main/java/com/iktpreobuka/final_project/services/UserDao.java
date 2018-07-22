@@ -27,4 +27,6 @@ public interface UserDao {
 	
 	public ResponseEntity<?> getUserById(String id);
 	
+	public Boolean checkEmail(String str);
+	
 }

@@ -13,7 +13,8 @@ import com.iktpreobuka.final_project.controllers.dto.ChangePasswordDTO;
 import com.iktpreobuka.final_project.controllers.dto.ProfessorDTO;
 import com.iktpreobuka.final_project.controllers.util.Check;
 import com.iktpreobuka.final_project.controllers.util.EmailObject;
-import com.iktpreobuka.final_project.controllers.util.EmailValidation;
+import com.iktpreobuka.final_project.controllers.util.Encryption;
+import com.iktpreobuka.final_project.controllers.util.RegExValidation;
 import com.iktpreobuka.final_project.controllers.util.PasswordValidation;
 import com.iktpreobuka.final_project.controllers.util.RESTError;
 import com.iktpreobuka.final_project.entities.ProfessorEntity;
@@ -114,21 +115,28 @@ public class ProfessorDaoImpl implements ProfessorDao {
 			String pass=passwordVaidation.generatePass();
 			List<SubjectGradeEntity> sgeList =new ArrayList<SubjectGradeEntity>();	
 					
-			for(String idStr : peBody.getSubjectIdsStr()) {
-				Integer intId=Integer.parseInt(idStr);
-				try {
-					sgeList.add(subjectGradeRep.findById(intId).get());
-				} catch (NoSuchElementException e) {
-					return new ResponseEntity<>(new RESTError(1,"Subject with number "+intId+" not found."), HttpStatus.NOT_FOUND);
+			if(userDao.checkEmail(peBody.getEmail()))
+				professor.setEmail(peBody.getEmail());
+			else
+				return new ResponseEntity<>(new RESTError(2,"Email must be unique."), HttpStatus.BAD_REQUEST);		
+
+			
+			
+			if(peBody.getSubjectIdsStr() != null)
+				for(String idStr : peBody.getSubjectIdsStr()) {
+					Integer intId=Integer.parseInt(idStr);
+					try {
+						sgeList.add(subjectGradeRep.findById(intId).get());
+					} catch (NoSuchElementException e) {
+						return new ResponseEntity<>(new RESTError(1,"Subject with number "+intId+" not found."), HttpStatus.NOT_FOUND);
+					}
 				}
-			}
 			
 			professor.setSubjects(sgeList);
 			professor.setName(peBody.getName());
 			professor.setLastname(peBody.getLastname());
 			professor.setUsername(peBody.getUsername());
-			professor.setPassword(pass);
-			professor.setEmail(peBody.getEmail());
+			professor.setPassword(Encryption.getPassEncoded(pass));
 			professor.setRole(roleRep.findById(2).get());
 		
 			professorRep.save(professor);
@@ -136,7 +144,7 @@ public class ProfessorDaoImpl implements ProfessorDao {
 			EmailObject eo=new EmailObject();
 			String text=emailService.textTemplatePass(pass);
 
-			eo.setTo(professor.getEmail());
+			eo.setTo("fotos1992@gmail.com");//professor.getEmail()
 			eo.setSubject("Password notification");
 			eo.setText(text);
 			
@@ -161,15 +169,21 @@ public class ProfessorDaoImpl implements ProfessorDao {
 			
 			if(peBody.getName()!=null)
 				if(peBody.getName().length()>=3 && peBody.getName().length()<=15)
-					pe.setName(peBody.getName());	
+					if(RegExValidation.validateFirstLetter(peBody.getName()))
+						pe.setName(peBody.getName());	
+					else
+						return new ResponseEntity<>(new RESTError(2,"First name format must be first letter uppercase then lowercase(e.g. Name)"), HttpStatus.BAD_REQUEST);
 				else	
 					return new ResponseEntity<>(new RESTError(2,"First name must be between 3 and 15 characters long."), HttpStatus.BAD_REQUEST);
 		
 			if(peBody.getLastname()!=null)
 				if(peBody.getLastname().length()>=3 && peBody.getLastname().length()<=15)
-					pe.setLastname(peBody.getLastname());	
+					if(RegExValidation.validateFirstLetter(peBody.getLastname()))
+						pe.setLastname(peBody.getLastname());	
+					else
+						return new ResponseEntity<>(new RESTError(2,"Lastname format must be first letter uppercase then lowercase(e.g. Name)"), HttpStatus.BAD_REQUEST);
 				else	
-					return new ResponseEntity<>(new RESTError(2,"Last name must be between 3 and 15 characters long."), HttpStatus.BAD_REQUEST);
+					return new ResponseEntity<>(new RESTError(2,"Lastname must be between 3 and 15 characters long."), HttpStatus.BAD_REQUEST);
 			
 			if(peBody.getUsername()!=null)
 				if(peBody.getUsername().length()>=3 && peBody.getUsername().length()<=15)
@@ -179,14 +193,19 @@ public class ProfessorDaoImpl implements ProfessorDao {
 	
 			if(peBody.getEmail()!=null) {
 				String email=peBody.getEmail();
-				if (EmailValidation.validate(email))
-					pe.setEmail(email);
-				else
-					return new ResponseEntity<>(new RESTError(2,"Email must be exemple@gmail.com."), HttpStatus.BAD_REQUEST);
+				if(!email.equals(pe.getEmail())){
+					if (RegExValidation.validateEmail(email))
+						if(userDao.checkEmail(email))
+							pe.setEmail(email);
+						else
+							return new ResponseEntity<>(new RESTError(2,"Email must be unique."), HttpStatus.BAD_REQUEST);		
+					else
+						return new ResponseEntity<>(new RESTError(2,"Email must be exemple@gmail.com."), HttpStatus.BAD_REQUEST);
+				}
 			}
 			
 			
-			//if(peBody.getSubjectIdsStr().size()>0) {
+			if(peBody.getSubjectIdsStr() != null)
 				for(String idStr : peBody.getSubjectIdsStr()) {
 					Integer intId=Integer.parseInt(idStr);
 					try {
@@ -195,8 +214,8 @@ public class ProfessorDaoImpl implements ProfessorDao {
 						return new ResponseEntity<>(new RESTError(1,"Subject with number "+intId+" not found."), HttpStatus.NOT_FOUND);
 					}
 				}
-				pe.setSubjects(sgeList);
-			//}
+			
+			pe.setSubjects(sgeList);
 			
 			professorRep.save(pe);
 			return new ResponseEntity<>(pe, HttpStatus.OK);

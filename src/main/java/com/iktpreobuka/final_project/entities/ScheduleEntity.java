@@ -10,6 +10,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Version;
@@ -61,6 +63,16 @@ public class ScheduleEntity {
 	@JsonIgnore
 	@OneToMany(mappedBy="schedule",fetch=FetchType.LAZY,cascade=CascadeType.REFRESH)
 	private List<AbsenceRecordEntity> absenceRecord=new ArrayList<AbsenceRecordEntity>();
+	
+	
+	@JsonIgnore
+	@ManyToMany(fetch=FetchType.LAZY,cascade=CascadeType.REFRESH)
+	@JoinTable(name="schedule_student",joinColumns=
+			{@JoinColumn(name="schedule_id",nullable=false,updatable=false)},
+		inverseJoinColumns=
+			{@JoinColumn(name="student_id",nullable=false,updatable=false)})
+	List<StudentEntity> students=new ArrayList<StudentEntity>();
+	
 	
 	
 	public ScheduleEntity(){
@@ -147,6 +159,16 @@ public class ScheduleEntity {
 
 	public void setAbsenceRecord(List<AbsenceRecordEntity> absenceRecord) {
 		this.absenceRecord = absenceRecord;
+	}
+
+
+	public List<StudentEntity> getStudents() {
+		return students;
+	}
+
+
+	public void setStudents(List<StudentEntity> students) {
+		this.students = students;
 	}
 	
 	

@@ -146,11 +146,14 @@ public class MarkDaoImpl implements MarkDao {
 			try {
 				ScheduleEntity se=scheduleRep.findById(scheduleId).get();
 				if (se.getSchoolYear().getActive()==false) 
-					return new ResponseEntity<>(new RESTError(2,"Year must be active"), HttpStatus.BAD_REQUEST);
+					return new ResponseEntity<>(new RESTError(2,"School year of schedule  must be active"), HttpStatus.BAD_REQUEST);
 
 				mark.setSchedule(se);
-				if(ue.getRole().getName() == "ROLE_PROFESSOR")
-					mark.setRatedBy(se.getTeacher());
+				if(ue.getRole().getId() == 2)
+					if(ue.equals(mark.getSchedule().getTeacher()))
+						mark.setRatedBy(se.getTeacher());
+					else
+						return new ResponseEntity<>(new RESTError(1,"Professor can`t set that mark."), HttpStatus.NOT_FOUND);
 			} catch (NoSuchElementException e) {
 				return new ResponseEntity<>(new RESTError(1,"Schedule with number "+scheduleId+" not found."), HttpStatus.NOT_FOUND);
 			}	
@@ -243,6 +246,10 @@ public class MarkDaoImpl implements MarkDao {
 			Integer id=Integer.parseInt(idString);			
 			MarkEntity me=markRep.findById(id).get();
 			
+			
+			
+			
+			
 			if(meBody.getStudentStr()!=null){
 				Integer studentId=Integer.parseInt(meBody.getStudentStr());
 				if(studentId<1)
@@ -261,9 +268,15 @@ public class MarkDaoImpl implements MarkDao {
 					return new ResponseEntity<>(new RESTError(2,"Schedule id number must be greater than 0!"), HttpStatus.BAD_REQUEST);	
 				try {
 					ScheduleEntity se=scheduleRep.findById(sceduleId).get();
+					if(se.getSchoolYear().getActive()==false)
+						return new ResponseEntity<>(new RESTError(2,"School year of schedule  must be active"), HttpStatus.BAD_REQUEST);	
 					me.setSchedule(se);
-					if(ue.getRole().getName() == "ROLE_PROFESSOR")
-						me.setRatedBy(se.getTeacher());
+					if(ue.getRole().getId() == 2) {
+						if(ue.equals(me.getSchedule().getTeacher()))
+							me.setRatedBy(se.getTeacher());
+						else
+							return new ResponseEntity<>(new RESTError(1,"Professor can`t edit that mark."), HttpStatus.NOT_FOUND);
+					}
 				} catch (NoSuchElementException e) {
 					return new ResponseEntity<>(new RESTError(1,"Schedule with number "+sceduleId+" not found."), HttpStatus.NOT_FOUND);
 				}
@@ -313,7 +326,6 @@ public class MarkDaoImpl implements MarkDao {
 			}
 				
 			me.setLastUpdateDate(new Date());
-			
 			
 			markRep.save(me);
 			
@@ -407,6 +419,7 @@ public class MarkDaoImpl implements MarkDao {
 			
 			if(syeList.size()==1) 
 				semester=Check.getSemester(syeList.get(0), new Date());
+			
 			else 
 				return new ResponseEntity<>(new RESTError(3,"Must be exactly one active year"),HttpStatus.INTERNAL_SERVER_ERROR);
 			
@@ -465,7 +478,7 @@ public class MarkDaoImpl implements MarkDao {
 				}
 			}
 			markRep.saveAll(generatedMarksList);
-			return new ResponseEntity<>(generatedMarksList, HttpStatus.OK);
+			return new ResponseEntity<>(generatedMarksList, HttpStatus.OK);//generatedMarksList
 			
 		} catch (NoSuchElementException e) {
 			return new ResponseEntity<>(new RESTError(1,"Entity not found."), HttpStatus.NOT_FOUND);
@@ -538,7 +551,7 @@ public class MarkDaoImpl implements MarkDao {
 	 
 	private List<AvgMarkDTO> selectMarksAvgFromDB(Byte semester)throws Exception{
 		String sql=	"SELECT new com.iktpreobuka.final_project.controllers.dto.AvgMarkDTO( s.id, sch.id,avg(m.markValue)) "
-				+ "FROM StudentEntity s LEFT JOIN ScheduleEntity sch ON sch.classEntity=s.classEntity "
+				+ "FROM StudentEntity s INNER JOIN ScheduleEntity sch ON sch.classEntity=s.classEntity "
 				+ "LEFT JOIN MarkEntity m ON m.schedule=sch.id AND m.student=s.id "
 				+ "AND (m.markType=1 OR m.markType=2 OR m.markType=3) AND m.semester=:semester "
 				+ "GROUP BY s.id,sch.id";
@@ -548,6 +561,11 @@ public class MarkDaoImpl implements MarkDao {
 		
 		@SuppressWarnings("unchecked")
 		List<AvgMarkDTO> result=query.getResultList();
+
+
+//		for(AvgMarkDTO avg:result) {
+//			System.out.println("stuID:"+avg.getStudentID()+"   schId:"+avg.getScheduleID()+"    avg:"+ avg.getAvg());
+//		}
 		
 		return  result;
 	}
